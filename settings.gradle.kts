@@ -539,6 +539,9 @@ hideFromDependabot(":instrumentation:vibur-dbcp-11.0:testing")
 hideFromDependabot(":instrumentation:wicket-8.0:javaagent")
 hideFromDependabot(":instrumentation:zio:zio-2.0:javaagent")
 
+//custom
+hideFromDependabot(":instrumentation:javalin:javalin-5.0:javaagent")
+
 // benchmark
 include(":benchmark-overhead-jmh")
 include(":benchmark-jfr-analyzer")
