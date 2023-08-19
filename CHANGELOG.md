@@ -1,8 +1,6 @@
 # Changelog
 
-## Version 1.28.0 (2023-07-12)
-
-## Version 1.29.0 (2023-08-17)
+## Version 1.29.0 (2023-08-16)
 
 ### Migration notes
 
