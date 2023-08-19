@@ -12,7 +12,6 @@ import static io.opentelemetry.instrumentation.testing.junit.http.ServerEndpoint
 import static io.opentelemetry.instrumentation.testing.junit.http.ServerEndpoint.INDEXED_CHILD;
 import static io.opentelemetry.instrumentation.testing.junit.http.ServerEndpoint.NOT_FOUND;
 import static io.opentelemetry.instrumentation.testing.junit.http.ServerEndpoint.PATH_PARAM;
-import static io.opentelemetry.instrumentation.testing.junit.http.ServerEndpoint.QUERY_PARAM;
 import static io.opentelemetry.instrumentation.testing.junit.http.ServerEndpoint.REDIRECT;
 import static io.opentelemetry.instrumentation.testing.junit.http.ServerEndpoint.SUCCESS;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
@@ -27,7 +26,6 @@ import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.context.propagation.TextMapSetter;
-import io.opentelemetry.instrumentation.api.instrumenter.net.internal.NetAttributes;
 import io.opentelemetry.instrumentation.testing.GlobalTraceUtil;
 import io.opentelemetry.sdk.testing.assertj.SpanDataAssert;
 import io.opentelemetry.sdk.testing.assertj.TraceAssert;
@@ -688,13 +686,13 @@ public abstract class AbstractHttpServerTest<SERVER> extends AbstractHttpServerU
           assertThat(attrs).containsEntry(SemanticAttributes.HTTP_METHOD, method);
           assertThat(attrs).containsEntry(SemanticAttributes.HTTP_STATUS_CODE, endpoint.status);
 
-          if (attrs.get(NetAttributes.NET_PROTOCOL_NAME) != null) {
-            assertThat(attrs).containsEntry(NetAttributes.NET_PROTOCOL_NAME, "http");
+          if (attrs.get(SemanticAttributes.NET_PROTOCOL_NAME) != null) {
+            assertThat(attrs).containsEntry(SemanticAttributes.NET_PROTOCOL_NAME, "http");
           }
-          if (attrs.get(NetAttributes.NET_PROTOCOL_VERSION) != null) {
+          if (attrs.get(SemanticAttributes.NET_PROTOCOL_VERSION) != null) {
             assertThat(attrs)
                 .hasEntrySatisfying(
-                    NetAttributes.NET_PROTOCOL_VERSION,
+                    SemanticAttributes.NET_PROTOCOL_VERSION,
                     entry -> assertThat(entry).isIn("1.1", "2.0"));
           }
           assertThat(attrs).containsEntry(SemanticAttributes.USER_AGENT_ORIGINAL, TEST_USER_AGENT);
@@ -705,7 +703,7 @@ public abstract class AbstractHttpServerTest<SERVER> extends AbstractHttpServerU
                 .containsEntry(
                     SemanticAttributes.HTTP_TARGET,
                     endpoint.resolvePath(address).getPath()
-                        + (endpoint == QUERY_PARAM ? "?" + endpoint.body : ""));
+                        + (endpoint.getQuery() != null ? "?" + endpoint.getQuery() : ""));
           }
 
           if (attrs.get(SemanticAttributes.HTTP_REQUEST_CONTENT_LENGTH) != null) {
