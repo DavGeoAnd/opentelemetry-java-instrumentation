@@ -550,7 +550,7 @@ include(":instrumentation:wicket-8.0:javaagent")
 include(":instrumentation:zio:zio-2.0:javaagent")
 
 //custom
-hideFromDependabot(":instrumentation:javalin:javalin-5.0:javaagent")
+include(":instrumentation:javalin:javalin-5.0:javaagent")
 
 // benchmark
 include(":benchmark-overhead-jmh")

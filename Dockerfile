@@ -1,6 +1,6 @@
 FROM eclipse-temurin:17.0.7_7-jre-alpine
 
-ADD /javaagent/build/libs/opentelemetry-javaagent-1.28.0.jar /otel-agent/java-otel.jar
+ADD /javaagent/build/libs/opentelemetry-javaagent-1.29.0.jar /otel-agent/java-otel.jar
 
 ENV JAVA_OPTS='-javaagent:/otel-agent/java-otel.jar'
 
@@ -14,3 +14,6 @@ ENV OTEL_LOGS_EXPORTER=none
 
 # traces
 ENV OTEL_TRACES_EXPORTER=logging
+
+#docker build -t dgandalcio/java-otel-agent:17.0.7_7-1.29.0 .
+#docker image push dgandalcio/java-otel-agent:17.0.7_7-1.29.0
