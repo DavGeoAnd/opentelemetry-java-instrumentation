@@ -1,4 +1,4 @@
-package io.opentelemetry.javaagent.instrumentation.javalin.v5_0;
+package io.opentelemetry.javaagent.instrumentation.davgeoand;
 
 import static java.util.Collections.singletonList;
 

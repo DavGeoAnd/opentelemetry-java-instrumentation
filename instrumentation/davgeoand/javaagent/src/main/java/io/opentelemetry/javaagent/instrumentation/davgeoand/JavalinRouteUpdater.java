@@ -1,4 +1,4 @@
-package io.opentelemetry.javaagent.instrumentation.javalin.v5_0;
+package io.opentelemetry.javaagent.instrumentation.davgeoand;
 
 import io.opentelemetry.context.Context;
 import io.opentelemetry.instrumentation.api.instrumenter.http.HttpRouteHolder;

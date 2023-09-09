@@ -14,6 +14,7 @@ muzzle {
 
 dependencies {
   library("io.javalin:javalin:5.0.0")
+  compileOnly("io.opentelemetry.javaagent:opentelemetry-javaagent-extension-api")
 
   testInstrumentation(project(":instrumentation:jetty:jetty-11.0:javaagent"))
 
