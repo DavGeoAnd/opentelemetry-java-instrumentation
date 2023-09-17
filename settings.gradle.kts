@@ -4,16 +4,16 @@ pluginManagement {
     id("com.google.cloud.tools.jib") version "3.3.2"
     id("com.gradle.plugin-publish") version "1.2.1"
     id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
-    id("org.jetbrains.kotlin.jvm") version "1.9.0"
+    id("org.jetbrains.kotlin.jvm") version "1.9.10"
     id("org.xbib.gradle.plugin.jflex") version "3.0.0"
     id("org.unbroken-dome.xjc") version "2.0.0"
-    id("org.graalvm.buildtools.native") version "0.9.24"
+    id("org.graalvm.buildtools.native") version "0.9.27"
   }
 }
 
 plugins {
-  id("com.gradle.enterprise") version "3.14.1"
-  id("com.gradle.common-custom-user-data-gradle-plugin") version "1.11.1"
+  id("com.gradle.enterprise") version "3.15"
+  id("com.gradle.common-custom-user-data-gradle-plugin") version "1.11.2"
   id("org.gradle.toolchains.foojay-resolver-convention") version "0.7.0"
   // this can't live in pluginManagement currently due to
   // https://github.com/bmuschko/gradle-docker-plugin/issues/1123
@@ -138,7 +138,7 @@ include(":smoke-tests:images:spring-boot")
 
 include(":smoke-tests-otel-starter")
 
-include("instrumentation:akka:akka-actor-2.3:javaagent")
+include(":instrumentation:akka:akka-actor-2.3:javaagent")
 include(":instrumentation:akka:akka-actor-fork-join-2.5:javaagent")
 include(":instrumentation:akka:akka-http-10.0:javaagent")
 include(":instrumentation:apache-dbcp-2.0:javaagent")
@@ -253,6 +253,7 @@ include(":instrumentation:hibernate:hibernate-6.0:javaagent")
 include(":instrumentation:hibernate:hibernate-6.0:spring-testing")
 include(":instrumentation:hibernate:hibernate-common:javaagent")
 include(":instrumentation:hibernate:hibernate-procedure-call-4.3:javaagent")
+include(":instrumentation:hibernate:hibernate-reactive-1.0:javaagent")
 include(":instrumentation:hikaricp-3.0:javaagent")
 include(":instrumentation:hikaricp-3.0:library")
 include(":instrumentation:hikaricp-3.0:testing")

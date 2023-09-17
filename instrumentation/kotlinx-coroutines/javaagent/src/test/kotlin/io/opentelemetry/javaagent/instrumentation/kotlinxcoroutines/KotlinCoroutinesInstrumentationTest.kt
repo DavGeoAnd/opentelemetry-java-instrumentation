@@ -19,7 +19,7 @@ import io.opentelemetry.instrumentation.testing.junit.AgentInstrumentationExtens
 import io.opentelemetry.instrumentation.testing.util.TelemetryDataUtil.orderByRootSpanName
 import io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo
 import io.opentelemetry.sdk.testing.assertj.TraceAssert
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes
+import io.opentelemetry.semconv.SemanticAttributes
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -557,6 +557,30 @@ class KotlinCoroutinesInstrumentationTest {
     @SpanAttribute("stringValue") s: String
   ) {
     delay(10)
+  }
+
+  // regression test for https://github.com/open-telemetry/opentelemetry-java-instrumentation/issues/9312
+  @Test
+  fun `test class with default constructor argument`() {
+    runBlocking {
+      val classDefaultConstructorArguments = ClazzWithDefaultConstructorArguments()
+      classDefaultConstructorArguments.sayHello()
+    }
+
+    testing.waitAndAssertTraces(
+      { trace ->
+        trace.hasSpansSatisfyingExactly(
+          {
+            it.hasName("ClazzWithDefaultConstructorArguments.sayHello")
+              .hasNoParent()
+              .hasAttributesSatisfyingExactly(
+                equalTo(SemanticAttributes.CODE_NAMESPACE, ClazzWithDefaultConstructorArguments::class.qualifiedName),
+                equalTo(SemanticAttributes.CODE_FUNCTION, "sayHello")
+              )
+          }
+        )
+      }
+    )
   }
 
   private fun tracedChild(opName: String) {

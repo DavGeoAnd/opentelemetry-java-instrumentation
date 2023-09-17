@@ -8,11 +8,11 @@ val dependencyVersions = hashMapOf<String, String>()
 rootProject.extra["versions"] = dependencyVersions
 
 // this line is managed by .github/scripts/update-sdk-version.sh
-val otelSdkVersion = "1.29.0"
+val otelSdkVersion = "1.30.1"
 val otelSdkAlphaVersion = otelSdkVersion.replaceFirst("(-SNAPSHOT)?$".toRegex(), "-alpha$1")
 
 // Need both BOM and groovy jars
-val groovyVersion = "4.0.13"
+val groovyVersion = "4.0.15"
 
 // We don't force libraries we instrument to new versions since we compile and test against specific
 // old baseline versions but we do try to force those libraries' transitive dependencies to new
@@ -33,20 +33,21 @@ val DEPENDENCY_BOMS = listOf(
   "io.opentelemetry:opentelemetry-bom:${otelSdkVersion}",
   "io.opentelemetry:opentelemetry-bom-alpha:${otelSdkAlphaVersion}",
   "org.junit:junit-bom:5.10.0",
-  "org.testcontainers:testcontainers-bom:1.18.3",
+  "org.testcontainers:testcontainers-bom:1.19.0",
   "org.spockframework:spock-bom:2.4-M1-groovy-4.0"
 )
 
 val autoServiceVersion = "1.1.1"
-val autoValueVersion = "1.10.3"
+val autoValueVersion = "1.10.4"
 val errorProneVersion = "2.21.1"
-val byteBuddyVersion = "1.14.6"
+val byteBuddyVersion = "1.14.8"
 val asmVersion = "9.5"
 val jmhVersion = "1.37"
 val mockitoVersion = "4.11.0"
-val slf4jVersion = "2.0.7"
+val slf4jVersion = "2.0.9"
 
 val CORE_DEPENDENCIES = listOf(
+  "io.opentelemetry.semconv:opentelemetry-semconv:1.21.0-alpha",
   "com.google.auto.service:auto-service:${autoServiceVersion}",
   "com.google.auto.service:auto-service-annotations:${autoServiceVersion}",
   "com.google.auto.value:auto-value:${autoValueVersion}",
@@ -82,8 +83,8 @@ val DEPENDENCIES = listOf(
   "ch.qos.logback:logback-classic:1.3.8", // 1.4+ requires Java 11+
   "com.github.stefanbirkner:system-lambda:1.2.1",
   "com.github.stefanbirkner:system-rules:1.19.0",
-  "uk.org.webcompere:system-stubs-jupiter:2.0.2",
-  "com.uber.nullaway:nullaway:0.10.12",
+  "uk.org.webcompere:system-stubs-jupiter:2.0.3",
+  "com.uber.nullaway:nullaway:0.10.14",
   "commons-beanutils:commons-beanutils:1.9.4",
   "commons-cli:commons-cli:1.5.0",
   "commons-codec:commons-codec:1.16.0",
@@ -107,9 +108,9 @@ val DEPENDENCIES = listOf(
   "org.junit-pioneer:junit-pioneer:1.9.1",
   "org.objenesis:objenesis:3.3",
   // Note that this is only referenced as "org.springframework.boot" in build files, not the artifact name.
-  "org.springframework.boot:spring-boot-dependencies:2.7.14",
+  "org.springframework.boot:spring-boot-dependencies:2.7.15",
   "javax.validation:validation-api:2.0.1.Final",
-  "org.snakeyaml:snakeyaml-engine:2.6"
+  "org.snakeyaml:snakeyaml-engine:2.7"
 )
 
 javaPlatform {

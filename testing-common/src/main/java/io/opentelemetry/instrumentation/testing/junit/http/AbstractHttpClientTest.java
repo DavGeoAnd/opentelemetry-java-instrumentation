@@ -8,7 +8,7 @@ package io.opentelemetry.instrumentation.testing.junit.http;
 import static io.opentelemetry.instrumentation.testing.util.TelemetryDataUtil.comparingRootSpanAttribute;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.assertThat;
 import static io.opentelemetry.sdk.testing.assertj.OpenTelemetryAssertions.equalTo;
-import static io.opentelemetry.semconv.trace.attributes.SemanticAttributes.NetTransportValues.IP_TCP;
+import static io.opentelemetry.semconv.SemanticAttributes.NetTransportValues.IP_TCP;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.Assume.assumeFalse;
@@ -19,7 +19,6 @@ import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.instrumentation.api.instrumenter.http.internal.HttpAttributes;
 import io.opentelemetry.instrumentation.api.instrumenter.network.internal.NetworkAttributes;
-import io.opentelemetry.instrumentation.api.instrumenter.url.internal.UrlAttributes;
 import io.opentelemetry.instrumentation.api.internal.HttpConstants;
 import io.opentelemetry.instrumentation.api.internal.SemconvStability;
 import io.opentelemetry.instrumentation.test.utils.PortUtils;
@@ -28,7 +27,7 @@ import io.opentelemetry.sdk.testing.assertj.SpanDataAssert;
 import io.opentelemetry.sdk.testing.assertj.TraceAssert;
 import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.data.StatusData;
-import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
+import io.opentelemetry.semconv.SemanticAttributes;
 import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -43,6 +42,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -115,11 +115,10 @@ public abstract class AbstractHttpClientTest<REQUEST> implements HttpClientTypeA
     assertThat(responseCode).isEqualTo(200);
 
     testing.waitAndAssertTraces(
-        trace -> {
-          trace.hasSpansSatisfyingExactly(
-              span -> assertClientSpan(span, uri, method, responseCode, null).hasNoParent(),
-              span -> assertServerSpan(span).hasParent(trace.getSpan(0)));
-        });
+        trace ->
+            trace.hasSpansSatisfyingExactly(
+                span -> assertClientSpan(span, uri, method, responseCode, null).hasNoParent(),
+                span -> assertServerSpan(span).hasParent(trace.getSpan(0))));
   }
 
   @Test
@@ -713,6 +712,43 @@ public abstract class AbstractHttpClientTest<REQUEST> implements HttpClientTypeA
         });
   }
 
+  @Test
+  void httpClientMetrics() throws Exception {
+    URI uri = resolveAddress("/success");
+    String method = "GET";
+    int responseCode = doRequest(method, uri);
+
+    assertThat(responseCode).isEqualTo(200);
+
+    AtomicReference<String> instrumentationName = new AtomicReference<>();
+    testing.waitAndAssertTraces(
+        trace -> {
+          instrumentationName.set(trace.getSpan(0).getInstrumentationScopeInfo().getName());
+          trace.hasSpansSatisfyingExactly(
+              span -> assertClientSpan(span, uri, method, responseCode, null).hasNoParent(),
+              span -> assertServerSpan(span).hasParent(trace.getSpan(0)));
+        });
+
+    String durationInstrumentName =
+        SemconvStability.emitStableHttpSemconv()
+            ? "http.client.request.duration"
+            : "http.client.duration";
+
+    testing.waitAndAssertMetrics(
+        instrumentationName.get(),
+        durationInstrumentName,
+        metrics ->
+            metrics.anySatisfy(
+                metric ->
+                    assertThat(metric)
+                        .hasDescription("The duration of the outbound HTTP request")
+                        .hasUnit(SemconvStability.emitStableHttpSemconv() ? "s" : "ms")
+                        .hasHistogramSatisfying(
+                            histogram ->
+                                histogram.hasPointsSatisfying(
+                                    point -> point.hasSumGreaterThan(0.0)))));
+  }
+
   /**
    * This test fires a large number of concurrent requests. Each request first hits a HTTP server
    * and then makes another client request. The goal of this test is to verify that in highly
@@ -944,6 +980,7 @@ public abstract class AbstractHttpClientTest<REQUEST> implements HttpClientTypeA
   }
 
   // Visible for spock bridge.
+  @SuppressWarnings("deprecation") // until old http semconv are dropped in 2.0
   SpanDataAssert assertClientSpan(
       SpanDataAssert span,
       URI uri,
@@ -1081,34 +1118,8 @@ public abstract class AbstractHttpClientTest<REQUEST> implements HttpClientTypeA
             });
   }
 
-  @SuppressWarnings("unchecked")
   protected static <T> AttributeKey<T> getAttributeKey(AttributeKey<T> oldKey) {
-    if (SemconvStability.emitStableHttpSemconv()) {
-      if (SemanticAttributes.NET_PROTOCOL_NAME == oldKey) {
-        return (AttributeKey<T>) NetworkAttributes.NETWORK_PROTOCOL_NAME;
-      } else if (SemanticAttributes.NET_PROTOCOL_VERSION == oldKey) {
-        return (AttributeKey<T>) NetworkAttributes.NETWORK_PROTOCOL_VERSION;
-      } else if (SemanticAttributes.NET_PEER_NAME == oldKey) {
-        return (AttributeKey<T>) NetworkAttributes.SERVER_ADDRESS;
-      } else if (SemanticAttributes.NET_PEER_PORT == oldKey) {
-        return (AttributeKey<T>) NetworkAttributes.SERVER_PORT;
-      } else if (SemanticAttributes.NET_SOCK_PEER_ADDR == oldKey) {
-        return (AttributeKey<T>) NetworkAttributes.CLIENT_SOCKET_ADDRESS;
-      } else if (SemanticAttributes.NET_SOCK_PEER_PORT == oldKey) {
-        return (AttributeKey<T>) NetworkAttributes.CLIENT_SOCKET_PORT;
-      } else if (SemanticAttributes.HTTP_URL == oldKey) {
-        return (AttributeKey<T>) UrlAttributes.URL_FULL;
-      } else if (SemanticAttributes.HTTP_METHOD == oldKey) {
-        return (AttributeKey<T>) HttpAttributes.HTTP_REQUEST_METHOD;
-      } else if (SemanticAttributes.HTTP_REQUEST_CONTENT_LENGTH == oldKey) {
-        return (AttributeKey<T>) HttpAttributes.HTTP_REQUEST_BODY_SIZE;
-      } else if (SemanticAttributes.HTTP_RESPONSE_CONTENT_LENGTH == oldKey) {
-        return (AttributeKey<T>) HttpAttributes.HTTP_RESPONSE_BODY_SIZE;
-      } else if (SemanticAttributes.HTTP_STATUS_CODE == oldKey) {
-        return (AttributeKey<T>) HttpAttributes.HTTP_RESPONSE_STATUS_CODE;
-      }
-    }
-    return oldKey;
+    return SemconvStabilityUtil.getAttributeKey(oldKey);
   }
 
   private static Set<AttributeKey<?>> getAttributeKeys(Set<AttributeKey<?>> oldKeys) {
