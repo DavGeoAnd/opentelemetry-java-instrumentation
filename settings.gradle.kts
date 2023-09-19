@@ -551,7 +551,8 @@ include(":instrumentation:wicket-8.0:javaagent")
 include(":instrumentation:zio:zio-2.0:javaagent")
 
 //custom
-include(":instrumentation:davgeoand:javaagent")
+include(":instrumentation:javalin:javalin-5.0:javaagent")
+include(":instrumentation:trace_samplers:nohealth:javaagent")
 
 // benchmark
 include(":benchmark-overhead-jmh")
